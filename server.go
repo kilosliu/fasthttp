@@ -230,6 +230,8 @@ type Server struct {
 	// is zero, the value of ReadTimeout is used.
 	IdleTimeout time.Duration
 
+	MaxIdleWorkerDuration time.Duration
+
 	// Maximum number of concurrent client connections allowed per IP.
 	//
 	// By default unlimited number of concurrent connections
@@ -1757,11 +1759,12 @@ func (s *Server) Serve(ln net.Listener) error {
 	s.mu.Unlock()
 
 	wp := &workerPool{
-		WorkerFunc:      s.serveConn,
-		MaxWorkersCount: maxWorkersCount,
-		LogAllErrors:    s.LogAllErrors,
-		Logger:          s.logger(),
-		connState:       s.setState,
+		WorkerFunc:            s.serveConn,
+		MaxWorkersCount:       maxWorkersCount,
+		LogAllErrors:          s.LogAllErrors,
+		Logger:                s.logger(),
+		connState:             s.setState,
+		MaxIdleWorkerDuration: s.MaxIdleWorkerDuration,
 	}
 	wp.Start()
 
